@@ -20,6 +20,9 @@ void error(const char *msg)
 // Buffer to store the respons message
 #define BUFFER_SIZE 6387162
 
+//Number of threads to be created
+#define NUM_THREADS     5
+
 //struct to pass args to mainOriginal from pthread_create()
 struct arg_struct {
   int argc;
@@ -29,55 +32,64 @@ struct arg_struct {
 int mainOriginal(void *arguments)
 {
   struct arg_struct *args = arguments;
-
-  int sockfd, portno, n;
-  struct sockaddr_in serv_addr;
-  struct hostent *server;
-
-  char buffer[BUFFER_SIZE];
-  if (args -> argc < 3)
-  {
-    fprintf(stderr, "usage %s hostname port\n", args -> argv[0]);
-    exit(0);
+  
+  int looperdooper = 0;
+  
+  while (looperdooper <= 3){
+      int sockfd, portno, n;
+      struct sockaddr_in serv_addr;
+      struct hostent *server;
+    
+      char buffer[BUFFER_SIZE];
+      if (args -> argc < 3)
+      {
+        fprintf(stderr, "usage %s hostname port\n", args -> argv[0]);
+        exit(0);
+      }
+      portno = atoi(args -> argv[2]);
+      sockfd = socket(AF_INET, SOCK_STREAM, 0);
+      if (sockfd < 0)
+        error("ERROR opening socket");
+    
+      server = gethostbyname(args -> argv[1]);
+      if (server == NULL)
+      {
+        fprintf(stderr, "ERROR, no such host\n");
+        exit(0);
+      }
+    
+      bzero((char *)&serv_addr, sizeof(serv_addr));
+      serv_addr.sin_family = AF_INET;
+      bcopy((char *)server->h_addr,
+            (char *)&serv_addr.sin_addr.s_addr,
+            server->h_length);
+      serv_addr.sin_port = htons(portno);
+    
+      if (connect(sockfd, &serv_addr, sizeof(serv_addr)) < 0)
+        error("ERROR connecting");
+    
+      n = write(sockfd, "GET /\r\n", strlen("GET /\r\n"));
+    
+      if (n < 0)
+        error("ERROR writing to socket");
+    
+      bzero(buffer, BUFFER_SIZE);
+    
+      n = read(sockfd, buffer, BUFFER_SIZE - 1);
+    
+      if (n < 0)
+        error("ERROR reading from socket");
+    
+      printf("%s\n", buffer);
+    
+      shutdown(sockfd, SHUT_RDWR);
+      close(sockfd);
+      
+      printf("Loop %d", looperdooper);
+      looperdooper++;
   }
-  portno = atoi(args -> argv[2]);
-  sockfd = socket(AF_INET, SOCK_STREAM, 0);
-  if (sockfd < 0)
-    error("ERROR opening socket");
 
-  server = gethostbyname(args -> argv[1]);
-  if (server == NULL)
-  {
-    fprintf(stderr, "ERROR, no such host\n");
-    exit(0);
-  }
-
-  bzero((char *)&serv_addr, sizeof(serv_addr));
-  serv_addr.sin_family = AF_INET;
-  bcopy((char *)server->h_addr,
-        (char *)&serv_addr.sin_addr.s_addr,
-        server->h_length);
-  serv_addr.sin_port = htons(portno);
-
-  if (connect(sockfd, &serv_addr, sizeof(serv_addr)) < 0)
-    error("ERROR connecting");
-
-  n = write(sockfd, "GET /\r\n", strlen("GET /\r\n"));
-
-  if (n < 0)
-    error("ERROR writing to socket");
-
-  bzero(buffer, BUFFER_SIZE);
-
-  n = read(sockfd, buffer, BUFFER_SIZE - 1);
-
-  if (n < 0)
-    error("ERROR reading from socket");
-
-  printf("%s\n", buffer);
-
-  shutdown(sockfd, SHUT_RDWR);
-  close(sockfd);
+  pthread_exit(NULL);
   return 0;
 }
 
@@ -87,12 +99,29 @@ int main(int argc, char *argv[])
   args.argc = argc;
   args.argv = argv;
 
+  /*
   pthread_t thread1, thread2;
 
   printf("\nThread 1:\n");
   pthread_create(&thread1, NULL, mainOriginal, (void*)&args);
   //printf("\nThread 2:\n");
+  //pthread_create(&thread2, NULL, mainOriginal, (void*)&args);
+
+  pthread_join(thread1, NULL);
+  pthread_join(thread2, NULL);
+  //mainOriginal(argc, *argv[]) */
+
+  pthread_t threads[NUM_THREADS];
+  int rc;
+  long t;
+  for(t=0; t<NUM_THREADS; t++){
+     printf("In main: creating thread %ld\n", t);
+     rc = pthread_create(&threads[t], NULL, mainOriginal, (void*)&args);
+     if (rc){
+        printf("ERROR; return code from pthread_create() is %d\n", rc);
+        exit(-1);
+     }
+  }
 
   pthread_exit(NULL);
-  //mainOriginal(argc, *argv[])
 }
