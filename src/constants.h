@@ -1,7 +1,7 @@
 #ifndef CONSTANTS_H
 
 // Buffer to store the response message
-#define BUFFER_SIZE 638
+#define BUFFER_SIZE 1024
 
 // default number of threads to be created
 #define NUM_THREADS 2

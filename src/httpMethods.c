@@ -22,21 +22,20 @@ void getMethod(void *arguments)
 {
 
   struct arg_struct *args = arguments;
-  struct resultStats resStat;
+
+  hostName = args->hostName;
+  portNo = args->portNo;
+  threadCount = args->threads;
 
   while (1)
   {
+    timeTaken = currentTime() - args->startTime;
     pthread_mutex_lock(&mutex1);
 
-    if (args->completeReqCount >= args->noOfReq || currentTime() >= args->startTime + args->duration)
+    if (completeReqCount >= args->noOfReq || currentTime() >= args->startTime + args->duration)
     {
-      resStat.completeReqCount = args->completeReqCount;
-      resStat.hostName = args->hostName;
-      resStat.portNo = args->portNo;
-      resStat.failReqCount = args->failReqCount;
-      resStat.threadCount = args->threads;
-      resStat.timeTaken = currentTime() - args->startTime;
-      print_stats(&resStat);
+      timeTaken = currentTime() - args->startTime;
+      print_stats();
     }
 
     pthread_mutex_unlock(&mutex1);
@@ -69,25 +68,40 @@ void getMethod(void *arguments)
 
     if (connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
     {
-      args->failReqCount++;
+      failReqCount++;
       error("ERROR connecting");
     }
 
-    n = write(sockfd, "GET /\r\n", strlen("GET /\r\n"));
+    n = write(sockfd, "GET / HTTP/1.0\r\n\r\n", strlen("GET / HTTP/1.0\r\n\r\n"));
 
     if (n < 0)
     {
-      args->failReqCount++;
+      failReqCount++;
       error("ERROR writing to socket");
     }
 
     bzero(buffer, BUFFER_SIZE);
 
-    n = read(sockfd, buffer, BUFFER_SIZE - 1);
-
-    if (n < 0)
+    char *tmpResult = NULL;
+    long thisReadSize;
+    long totalBytesRead = 0;
+    while (1)
     {
-      args->failReqCount++;
+      memset(buffer, 0, BUFFER_SIZE);
+      thisReadSize = recv(sockfd, buffer, BUFFER_SIZE - 1, 0);
+
+      if (thisReadSize <= 0)
+        break;
+
+      tmpResult = (char *)realloc(tmpResult, thisReadSize + totalBytesRead);
+
+      memcpy(tmpResult + totalBytesRead, buffer, thisReadSize);
+      totalBytesRead += thisReadSize;
+    }
+
+    if (totalBytesRead <= 0)
+    {
+      failReqCount++;
       error("ERROR reading from socket");
     }
     else
@@ -95,39 +109,35 @@ void getMethod(void *arguments)
       pthread_mutex_lock(&mutex2);
 
       if (args->isVerbose == 1)
-        printf("%s\n", buffer);
+        printf("%s\n", tmpResult);
 
-      char contentLength[4];
-      strncpy(contentLength, buffer + valIndex(buffer, "Content-Length:"), 3);
-      contentLength[3] = '\0';
-      resStat.contentLength = contentLength;
+      contentLength = totalBytesRead;
+      totalContentLength += totalBytesRead;
 
-      char statusCode[4];
-      strncpy(statusCode, buffer + valIndex(buffer, "HTTP/1.0"), 3);
-      statusCode[3] = '\0';
+      char statusCodeForHttp10[4];
+      strncpy(statusCodeForHttp10, tmpResult + valIndex(tmpResult, "HTTP/1.0"), 3);
+      statusCodeForHttp10[3] = '\0';
 
-      if (checkStatusCode(statusCode))
+      char statusCodeForHttp11[4];
+      strncpy(statusCodeForHttp11, tmpResult + valIndex(tmpResult, "HTTP/1.1"), 3);
+      statusCodeForHttp11[3] = '\0';
+
+      if (checkStatusCode(statusCodeForHttp10) || checkStatusCode(statusCodeForHttp11))
       {
-        args->completeReqCount++;
+        completeReqCount++;
       }
       else
       {
-        args->failReqCount++;
+        failReqCount++;
       }
 
-      // printf("\n--\nCompleted Request Count: %d\n--\n", args->completeReqCount);
-      // printf("\n--\nFailed Request Count: %d\n--\n", args->failReqCount);
-
-      if (args->completeReqCount >= args->noOfReq || currentTime() >= args->startTime + args->duration)
+      if (completeReqCount >= args->noOfReq || currentTime() >= args->startTime + args->duration)
       {
-        resStat.completeReqCount = args->completeReqCount;
-        resStat.hostName = args->hostName;
-        resStat.portNo = portno;
-        resStat.failReqCount = args->failReqCount;
-        resStat.threadCount = args->threads;
-        resStat.timeTaken = currentTime() - args->startTime;
-        print_stats(&resStat);
+        timeTaken = currentTime() - args->startTime;
+        print_stats();
       }
+
+      free(tmpResult);
       pthread_mutex_unlock(&mutex2);
     }
 

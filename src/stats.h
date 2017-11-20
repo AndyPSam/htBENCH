@@ -1,16 +1,14 @@
 
 #ifndef STATS_H
 
-typedef struct resultStats
-{
-  int completeReqCount;
-  int failReqCount;
-  int timeTaken;
-  int threadCount;
-  int portNo;
-  char *contentLength;
-  char *hostName;
-} resultStats;
+extern int completeReqCount;
+extern int failReqCount;
+extern int threadCount;
+extern int portNo;
+extern long timeTaken;
+extern long contentLength;
+extern long totalContentLength;
+extern char *hostName;
 
 int checkStatusCode(char *statusCode);
 

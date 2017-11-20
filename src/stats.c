@@ -1,8 +1,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <signal.h>
+
 #include "stats.h"
 #include "inputs.h"
+
+int completeReqCount = 0;
+int failReqCount = 0;
+int threadCount = 0;
+int portNo = 0;
+long timeTaken = 0;
+long contentLength = 0;
+long totalContentLength = 0;
+char *hostName = "";
 
 void print_usage()
 {
@@ -80,11 +91,12 @@ int checkStatusCode(char *statusCode)
 
 void print_stats(void *arg)
 {
-  struct resultStats *resStat = arg;
-  printf("\nStatistics:\n\tRunning %d sec test @ http://%s:%d/\n", resStat->timeTaken, resStat->hostName, resStat->portNo);
-  printf("\tThread Count: %d\n", resStat->threadCount);
-  printf("\tContent Length: %s\n", resStat->contentLength);
-  printf("\tComplete Request Count: %d\n", resStat->completeReqCount);
-  printf("\tFail Request Count: %d\n", resStat->failReqCount);
+  printf("\nStatistics:\n\tRunning %ld sec test @ http://%s:%d/\n", timeTaken, hostName, portNo);
+  printf("\tThread Count: %d\n", threadCount);
+  printf("\tContent Length: %ld\n", contentLength);
+  printf("\tTotal Content Length: %ld\n", totalContentLength);
+  printf("\tComplete Request Count: %d\n", completeReqCount);
+  printf("\tFail Request Count: %d\n", failReqCount);
+  printf("\tRate of Content Transfer: %ld\n", totalContentLength / (timeTaken ? timeTaken : 1));
   exit(2);
 }

@@ -11,8 +11,6 @@ typedef struct arg_struct
   int threads;
   int noOfReq;
   int startTime;
-  int completeReqCount;
-  int failReqCount;
   int isVerbose;
 } arg_struct;
 

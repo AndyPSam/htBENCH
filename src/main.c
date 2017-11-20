@@ -3,6 +3,7 @@
 #include <pthread.h>
 #include <ctype.h>
 #include <getopt.h>
+#include <signal.h>
 
 #include "inputs.h"
 #include "httpMethods.h"
@@ -12,6 +13,8 @@
 
 int main(int argc, char **argv)
 {
+
+  signal(SIGINT, print_stats);
 
   if (argc < 2)
   {
@@ -49,6 +52,7 @@ int main(int argc, char **argv)
     case 'v':
       args.isVerbose = 1;
       break;
+      
     case 'o':
       args.hostName = optarg;
       break;
@@ -90,16 +94,20 @@ int main(int argc, char **argv)
     }
   } while (next_option != -1);
 
-  args.completeReqCount = 0;
-
   args.portNo = args.portNo ? args.portNo : PORT_NO;
   args.threads = args.threads ? args.threads : NUM_THREADS;
-  if(!args.noOfReq && !args.duration) {
-      args.noOfReq = NO_OF_REQUESTS;
-      args.duration = DURATION;
-  } else if(!args.duration) {
+
+  if (!args.noOfReq && !args.duration)
+  {
+    args.noOfReq = NO_OF_REQUESTS;
+    args.duration = DURATION;
+  }
+  else if (!args.duration)
+  {
     args.duration = MAX_DURATION;
-  } else if(!args.noOfReq) {
+  }
+  else if (!args.noOfReq)
+  {
     args.noOfReq = MAX_NO_OF_REQUESTS;
   }
 
