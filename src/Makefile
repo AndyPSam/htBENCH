@@ -3,7 +3,7 @@
 .PHONY: all clean
 
 all: main.o httpMethods.o utils.o stats.o
-	gcc main.o httpMethods.o utils.o stats.o -o htbench
+	gcc main.o httpMethods.o utils.o stats.o -o htbench -pthread
 
 main.o: main.c inputs.h httpMethods.h constants.h
 	gcc -c main.c

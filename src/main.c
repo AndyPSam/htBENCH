@@ -119,6 +119,9 @@ int main(int argc, char **argv)
   // stores the current time in the startTime global variable
   args.startTime = currentTime();
 
+
+  printf("Running htBENCH, Version 1.0\n\nPlease be patient while we benchmark http://%s:%d/...\n(Press Ctrl + C at any time to stop benchmarking)\n", args.hostName, args.portNo);
+
   for (t = 0; t < args.threads; t++)
   {
     rc = pthread_create(&threads[t], NULL, (void *)getMethod, &args);
