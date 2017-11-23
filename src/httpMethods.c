@@ -15,6 +15,11 @@
 #include "httpMethods.h"
 #include "stats.h"
 
+/**
+ * pthread_mutex_t mymutex = PTHREAD_MUTEX_INITIALIZER;
+ * 
+ * Mutex variables must be declared with type pthread_mutex_t, and must be initialized before they can be used.
+  */
 pthread_mutex_t mutex1 = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t mutex2 = PTHREAD_MUTEX_INITIALIZER;
 
@@ -27,9 +32,19 @@ void getMethod(void *arguments)
   portNo = args->portNo;
   threadCount = args->threads;
 
+  
   while (1)
   {
     timeTaken = currentTime() - args->startTime;
+    
+    /**
+     * pthread_mutex_lock (mymutex)
+     * 
+     * @params mymutex: mutex instance to be locked.
+     * pthread_mutex_lock() routine is used by a thread to acquire a lock on the specified mutex variable.
+       If the mutex is already locked by another thread, this call will block the calling thread until
+       the mutex is unlocked. 
+     */ 
     pthread_mutex_lock(&mutex1);
 
     if (completeReqCount >= args->noOfReq || currentTime() >= args->startTime + args->duration)
@@ -38,6 +53,15 @@ void getMethod(void *arguments)
       print_stats();
     }
 
+    /**
+     * pthread_mutex_unlock (mymutex)
+     * 
+     * @params mymutex: mutex instance to be unlocked.
+     * pthread_mutex_unlock()will unlock a mutex if called by the owning thread.
+       Calling this routine is required after a thread has completed its use of protected data if other
+       threads are to acquire the mutex for their work with the protected data.
+     * 
+     */ 
     pthread_mutex_unlock(&mutex1);
 
     int sockfd, portno, n;
@@ -144,4 +168,13 @@ void getMethod(void *arguments)
     shutdown(sockfd, SHUT_RDWR);
     close(sockfd);
   }
+  /**
+   * pthread_mutex_destroy(mymutex)
+   * 
+   * @params mymutex: mutex instance to be destroyed.
+   * pthread_mutex_destroy() should be used to free a mutex object which is no longer needed. 
+    */
+  
+  pthread_mutex_destroy(&mutex1);
+  pthread_mutex_destroy(&mutex2);
 }
