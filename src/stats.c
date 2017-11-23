@@ -91,7 +91,7 @@ int checkStatusCode(char *statusCode)
 
 void print_stats(void *arg)
 {
-  printf("Done!\n\nStatistics:\n");
+  printf("\nDone!\n\nStatistics:\n");
 
   printf("\tServer Hostname:        %s\n", hostName);
   printf("\tServer Port:            %d\n", portNo);
