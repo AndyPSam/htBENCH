@@ -1,6 +1,6 @@
 #ifndef INPUT_H
 
-// struct to pass args to various modules
+/******* struct to pass args to various modules *******/
 typedef struct arg_struct
 {
   int argc;
@@ -13,5 +13,6 @@ typedef struct arg_struct
   int startTime;
   int isVerbose;
 } arg_struct;
+/****************************************************/
 
 #endif // !INPUT_H

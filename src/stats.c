@@ -6,6 +6,7 @@
 #include "stats.h"
 #include "inputs.h"
 
+// Initialising the GLOBALS
 int completeReqCount = 0;
 int failReqCount = 0;
 int threadCount = 0;
@@ -15,12 +16,19 @@ long contentLength = 0;
 long totalContentLength = 0;
 char *hostName = "";
 
+/**
+ * Prints the usage details of the application
+  */
 void print_usage()
 {
   printf("Usage: htbench [options]\nOptions are:\n\t-o hostname Hostname of the web server\n\t-p portno portno of the web server\n\t-r request Number of requests to perform\n\t-d duration duration of the test in seconds\n\t-t threads total number of threads to use\n\t-h help Show the usage of the app\n\t-v verbose Provides verbose display of statistics\n");
   exit(2);
 }
 
+/**
+ * @params {{char *}} statusCode -- Status code of the executed HTTP request
+ * @returns {{int}} 1 or 0 for whether status code is 2XX or 3XX and 4XX or 5XX respectively
+  */
 int checkStatusCode(char *statusCode)
 {
   if (
@@ -89,6 +97,9 @@ int checkStatusCode(char *statusCode)
   return 0;
 }
 
+/**
+ * Prints the statistics about the benchmark
+  */
 void print_stats(void *arg)
 {
   printf("\nDone!\n\nStatistics:\n");

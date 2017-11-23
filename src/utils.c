@@ -69,13 +69,15 @@ int *init_array(int size)
    by passing re-examination of previously matched characters.
 */
 //a function which prints occurrences of txt[] in pat[]
-int KMPSearch(char *t, char *p)
+int KMPSearch(char *text, char *pattern)
 {
-  int m = strlen(p);
-  int n = strlen(t);
-  int *f = init_array(m);
+  int patLen = strlen(pattern);
+  int textLen = strlen(text);
+
+  int *lps = init_array(patLen);
+
   // Preprocess the pattern (calculate lps[] array)
-  computeLPSArray(p, f);
+  computeLPSArray(pattern, lps);
 
   // index for txt[]
   int i = 0;
@@ -83,11 +85,11 @@ int KMPSearch(char *t, char *p)
   int j = 0;
 
   //As the while loop executes at most 2n times, showing that the time complexity of the search algorithm is O(n).
-  while (i < n)
+  while (i < textLen)
   {
-    if (t[i] == p[j])
+    if (text[i] == pattern[j])
     {
-      if (j == m - 1)
+      if (j == patLen - 1)
       {
         return i - j;
       }
@@ -101,7 +103,7 @@ int KMPSearch(char *t, char *p)
     {
       if (j > 0)
       {
-        j = f[j - 1];
+        j = lps[j - 1];
       }
       else
       {
@@ -114,28 +116,28 @@ int KMPSearch(char *t, char *p)
 }
 
 // Fills lps[] for given patttern pat[0..M-1]
-void computeLPSArray(char *pat, int *f)
+void computeLPSArray(char *pattern, int *lps)
 {
-  f[0] = 0;
+  lps[0] = 0;
   int i = 1;
   int j = 0;
 
-  int m = strlen(pat);
+  int m = strlen(pattern);
   while (i < m)
   {
-    if (pat[i] == pat[j])
+    if (pattern[i] == pattern[j])
     {
-      f[i] = j + 1;
+      lps[i] = j + 1;
       i += 1;
       j += 1;
     }
     else if (j > 0)
     {
-      j = f[j - 1];
+      j = lps[j - 1];
     }
     else
     {
-      f[i] = 0;
+      lps[i] = 0;
       i += 1;
     }
   }
