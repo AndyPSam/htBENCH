@@ -102,6 +102,7 @@ int checkStatusCode(char *statusCode)
   */
 void print_stats(void *arg)
 {
+  int totalRequests = (completeReqCount + failReqCount);
   printf("\nDone!\n\nStatistics:\n");
 
   printf("\tServer Hostname:        %s\n", hostName);
@@ -110,10 +111,10 @@ void print_stats(void *arg)
   printf("\tTime elapsed:           %ld seconds\n", timeTaken);
   printf("\tComplete requests:      %d\n", completeReqCount);
   printf("\tFailed requests:        %d\n", failReqCount);
-  printf("\tContent length:         %ld bytes (mean)\n", totalContentLength / (completeReqCount + failReqCount));
+  printf("\tContent length:         %ld bytes (mean)\n", totalContentLength / (totalRequests ? totalRequests : 1));
   printf("\tTotal content length:   %ld bytes\n", totalContentLength);
-  printf("\tRequests per second:    %ld (mean)\n", (completeReqCount + failReqCount) / timeTaken);
-  printf("\tTime per request:       %ld ms (mean)\n", (timeTaken * 1000) / (completeReqCount + failReqCount));
+  printf("\tRequests per second:    %ld (mean)\n", totalRequests / (timeTaken ? timeTaken : 1));
+  printf("\tTime per request:       %ld ms (mean)\n", (timeTaken * 1000) / (totalRequests ? totalRequests : 1));
   printf("\tTransfer rate:          %ld bytes/sec\n", totalContentLength / (timeTaken ? timeTaken : 1));
   exit(2);
 }
